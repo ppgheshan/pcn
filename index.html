@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Punchi Car Vehicle Search</title>
+
+
+<link rel="stylesheet" href="style.css">
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+</head>
+
+
+<body>
+
+
+<!-- ================= LOGIN ================= -->
+
+
+<div class="login-box" id="loginPage">
+
+
+<div class="card">
+
+
+<h1>
+Punchi Car
+</h1>
+
+
+<p>
+Sales Officer Login
+</p>
+
+
+
+<input
+id="username"
+type="text"
+placeholder="Username"
+>
+
+
+
+<input
+id="password"
+type="password"
+placeholder="Password"
+>
+
+
+
+<button id="loginBtn">
+
+Login
+
+</button>
+
+
+
+<div id="loginMessage"></div>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<!-- ================= APP ================= -->
+
+
+<div class="container" id="appPage" style="display:none;">
+
+
+
+<div class="top">
+
+
+<h2>
+Vehicle Search
+</h2>
+
+
+
+<button id="logoutBtn">
+
+Logout
+
+</button>
+
+
+
+</div>
+
+
+
+
+
+<input
+
+id="vehicleNumber"
+
+type="text"
+
+placeholder="Enter Vehicle Number (KT-5268)"
+
+autocomplete="off"
+
+>
+
+
+
+<button id="searchBtn">
+
+Search Vehicle
+
+</button>
+
+
+
+<div id="loading"></div>
+
+
+
+<div id="result"></div>
+
+
+
+</div>
+
+
+
+
+
+<script src="script.js"></script>
+
+
+</body>
+
+</html>

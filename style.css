@@ -1,0 +1,579 @@
+/* =====================================
+   GLOBAL
+===================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+
+body{
+
+    background:#f2f4f7;
+
+}
+
+
+
+/* =====================================
+   LOGIN
+===================================== */
+
+
+.login-box{
+
+    width:100%;
+    height:100vh;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:#1976d2;
+
+}
+
+
+
+.card{
+
+    width:360px;
+
+    background:white;
+
+    padding:30px;
+
+    border-radius:12px;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.25);
+
+    text-align:center;
+
+}
+
+
+
+.card h1{
+
+    color:#1976d2;
+
+    margin-bottom:10px;
+
+}
+
+
+
+.card p{
+
+    color:#666;
+
+    margin-bottom:20px;
+
+}
+
+
+
+.card input{
+
+
+    width:100%;
+
+    padding:12px;
+
+    margin-bottom:15px;
+
+    border:1px solid #ccc;
+
+    border-radius:6px;
+
+    font-size:16px;
+
+}
+
+
+
+.card button{
+
+
+    width:100%;
+
+    padding:12px;
+
+    background:#1976d2;
+
+    color:white;
+
+    border:none;
+
+    border-radius:6px;
+
+    font-size:16px;
+
+    cursor:pointer;
+
+}
+
+
+
+.card button:hover{
+
+    background:#0d47a1;
+
+}
+
+
+
+#loginMessage{
+
+    margin-top:15px;
+
+    color:red;
+
+    font-weight:bold;
+
+}
+
+
+
+
+
+/* =====================================
+   MAIN
+===================================== */
+
+
+.container{
+
+    max-width:950px;
+
+    margin:30px auto;
+
+    background:white;
+
+    padding:25px;
+
+    border-radius:12px;
+
+    box-shadow:0 5px 15px rgba(0,0,0,.15);
+
+}
+
+
+
+.top{
+
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:20px;
+
+}
+
+
+
+.top h2{
+
+    color:#1976d2;
+
+}
+
+
+
+
+#logoutBtn{
+
+
+    background:#d32f2f;
+
+    color:white;
+
+    border:none;
+
+    padding:10px 20px;
+
+    border-radius:6px;
+
+    cursor:pointer;
+
+}
+
+
+
+#logoutBtn:hover{
+
+    background:#b71c1c;
+
+}
+
+
+
+
+
+/* =====================================
+   SEARCH
+===================================== */
+
+
+#vehicleNumber{
+
+
+    width:100%;
+
+    padding:14px;
+
+    font-size:18px;
+
+    border:1px solid #ccc;
+
+    border-radius:6px;
+
+    margin-bottom:15px;
+
+}
+
+
+
+#searchBtn{
+
+
+    width:100%;
+
+    padding:14px;
+
+    background:#1976d2;
+
+    color:white;
+
+    border:none;
+
+    border-radius:6px;
+
+    cursor:pointer;
+
+    font-size:18px;
+
+}
+
+
+
+#searchBtn:hover{
+
+    background:#0d47a1;
+
+}
+
+
+
+#loading{
+
+
+    text-align:center;
+
+    color:#1976d2;
+
+    font-size:18px;
+
+    margin:20px;
+
+}
+
+
+
+
+
+/* =====================================
+   VEHICLE CARD
+===================================== */
+
+
+.vehicle-card{
+
+
+    margin-top:20px;
+
+    border:1px solid #ddd;
+
+    border-radius:10px;
+
+    overflow:hidden;
+
+}
+
+
+
+.vehicle-header{
+
+
+    background:#1976d2;
+
+    color:white;
+
+    text-align:center;
+
+    padding:15px;
+
+    font-size:24px;
+
+    font-weight:bold;
+
+}
+
+
+
+.section-title{
+
+
+    background:#eeeeee;
+
+    padding:12px 15px;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    color:#1976d2;
+
+}
+
+
+
+
+
+.row{
+
+
+    display:flex;
+
+    justify-content:space-between;
+
+    padding:12px 15px;
+
+    border-bottom:1px solid #eee;
+
+}
+
+
+
+.row:nth-child(even){
+
+    background:#fafafa;
+
+}
+
+
+
+.label{
+
+    font-weight:bold;
+
+}
+
+
+
+.value{
+
+    color:#444;
+
+    text-align:right;
+
+}
+
+
+
+
+
+
+/* =====================================
+   OPTIONS
+===================================== */
+
+
+.options{
+
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:10px;
+
+    padding:15px;
+
+}
+
+
+
+.option-item{
+
+
+    background:#e3f2fd;
+
+    padding:8px 12px;
+
+    border-radius:20px;
+
+    font-size:14px;
+
+}
+
+
+
+
+
+/* =====================================
+   VEHICLE IMAGES
+===================================== */
+
+
+.images{
+
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:10px;
+
+    padding:15px;
+
+}
+
+
+
+.vehicle-thumb{
+
+
+    width:90px;
+
+    height:90px;
+
+    object-fit:cover;
+
+    border-radius:8px;
+
+    border:1px solid #ccc;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+
+
+.vehicle-thumb:hover{
+
+
+    transform:scale(1.08);
+
+}
+
+
+
+
+
+/* =====================================
+   NOT FOUND
+===================================== */
+
+
+.not-found{
+
+
+    margin-top:20px;
+
+    background:#ffebee;
+
+    color:#c62828;
+
+    padding:15px;
+
+    text-align:center;
+
+    border-radius:6px;
+
+    font-weight:bold;
+
+}
+
+
+
+
+
+
+
+/* =====================================
+   MOBILE
+===================================== */
+
+
+@media(max-width:768px){
+
+
+
+.container{
+
+    margin:10px;
+
+    padding:15px;
+
+}
+
+
+
+.card{
+
+    width:90%;
+
+}
+
+
+
+.top{
+
+    flex-direction:column;
+
+    gap:15px;
+
+}
+
+
+
+.row{
+
+    flex-direction:column;
+
+    gap:5px;
+
+}
+
+
+
+.value{
+
+    text-align:left;
+
+}
+
+
+
+.vehicle-thumb{
+
+
+    width:75px;
+
+    height:75px;
+
+
+}
+
+
+
+}
