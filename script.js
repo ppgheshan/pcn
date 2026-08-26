@@ -107,7 +107,7 @@ document.getElementById("password")
 
 if(
 user==="admin" &&
-pass==="1234"
+pass==="12345"
 ){
 
 
