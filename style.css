@@ -289,7 +289,7 @@ body{
 
 
 /* =====================================
-   VEHICLE CARD
+   VEHICLE CARD (Search Results)
 ===================================== */
 
 
@@ -507,6 +507,170 @@ body{
 
 
 
+/* =====================================
+   NOTIFICATIONS (BELOW Search Results)
+===================================== */
+
+#notificationsContainer {
+    margin-top: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    background: white;
+}
+
+.notifications-header {
+    background: #1976d2;
+    color: white;
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notifications-title {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.refresh-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: background 0.3s;
+}
+
+.refresh-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+#notificationsList {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.loading-notifications {
+    padding: 20px;
+    text-align: center;
+    color: #999;
+}
+
+/* Individual Notification Item */
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    transition: background 0.2s;
+    cursor: default;
+}
+
+.notification-item:hover {
+    background: #f5f8fa;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-icon {
+    margin-right: 12px;
+    font-size: 20px;
+    min-width: 32px;
+    text-align: center;
+    padding-top: 2px;
+}
+
+.notification-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-content .title {
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
+}
+
+.notification-content .message {
+    font-size: 13px;
+    color: #555;
+    margin-top: 2px;
+    word-wrap: break-word;
+}
+
+.notification-content .time {
+    font-size: 11px;
+    color: #999;
+    margin-top: 4px;
+}
+
+.notification-item.unread {
+    background: #e3f2fd;
+    border-left: 3px solid #1976d2;
+}
+
+.notification-item.unread:hover {
+    background: #d4e8f7;
+}
+
+.notification-item.read {
+    background: white;
+}
+
+/* Notification Badge */
+.notification-badge {
+    background: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 8px;
+}
+
+/* No notifications */
+.no-notifications {
+    padding: 30px;
+    text-align: center;
+    color: #999;
+}
+
+.no-notifications .icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+/* Notification type colors */
+.notification-type-added .notification-icon { color: #27ae60; }
+.notification-type-updated .notification-icon { color: #f39c12; }
+.notification-type-sold .notification-icon { color: #e74c3c; }
+.notification-type-moved_to_sales .notification-icon { color: #8e44ad; }
+
+/* Mark as read button */
+.mark-read-btn {
+    background: none;
+    border: none;
+    color: #1976d2;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 4px;
+    transition: background 0.2s;
+}
+
+.mark-read-btn:hover {
+    background: #e3f2fd;
+}
+
+
+
 
 
 /* =====================================
@@ -575,5 +739,22 @@ body{
 }
 
 
+
+/* Mobile responsive for notifications */
+#notificationsList {
+    max-height: 300px;
+}
+
+.notification-item {
+    padding: 10px 12px;
+}
+
+.notification-content .title {
+    font-size: 13px;
+}
+
+.notification-content .message {
+    font-size: 12px;
+}
 
 }
