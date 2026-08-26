@@ -15,6 +15,15 @@ const db = window.supabase.createClient(
     SUPABASE_KEY
 );
 
+// =====================================
+// LOGIN CREDENTIALS (Update these when you change login)
+// =====================================
+
+const VALID_USERNAME = "admin";
+const VALID_PASSWORD = "12345";
+
+// Version number - increment this when you change credentials
+const LOGIN_VERSION = "1.0";
 
 
 // =====================================
@@ -25,15 +34,12 @@ document.addEventListener(
 "DOMContentLoaded",
 ()=>{
 
-
 document
 .getElementById("loginBtn")
 .addEventListener(
 "click",
 login
 );
-
-
 
 document
 .getElementById("searchBtn")
@@ -42,16 +48,12 @@ document
 searchVehicle
 );
 
-
-
 document
 .getElementById("logoutBtn")
 .addEventListener(
 "click",
 logout
 );
-
-
 
 document
 .getElementById("vehicleNumber")
@@ -69,19 +71,31 @@ searchVehicle();
 
 );
 
-
-
-if(localStorage.getItem("loggedIn")==="yes"){
-
-showApp();
-
-}
-
-
+// Check if user is already logged in
+checkLoginStatus();
 
 });
 
 
+// =====================================
+// CHECK LOGIN STATUS
+// =====================================
+
+function checkLoginStatus() {
+    const loggedIn = localStorage.getItem("loggedIn");
+    const savedVersion = localStorage.getItem("loginVersion");
+    const currentVersion = LOGIN_VERSION;
+
+    // If logged in and version matches, show app directly
+    if (loggedIn === "yes" && savedVersion === currentVersion) {
+        showApp();
+    } else {
+        // Clear any invalid login data
+        localStorage.removeItem("loggedIn");
+        localStorage.removeItem("loginVersion");
+        showLogin();
+    }
+}
 
 
 // =====================================
@@ -90,51 +104,43 @@ showApp();
 
 function login(){
 
-
 let user =
 document.getElementById("username")
 .value
 .trim();
-
-
 
 let pass =
 document.getElementById("password")
 .value
 .trim();
 
-
-
 if(
-user==="admin" &&
-pass==="12345"
+user === VALID_USERNAME &&
+pass === VALID_PASSWORD
 ){
 
-
+// Save login status with version
 localStorage.setItem(
 "loggedIn",
 "yes"
 );
-
+localStorage.setItem(
+"loginVersion",
+LOGIN_VERSION
+);
 
 showApp();
-
 
 }
 else{
 
-
 document.getElementById("loginMessage")
-.innerHTML=
+.innerHTML =
 "Invalid Username or Password";
 
-
 }
 
-
 }
-
-
 
 
 // =====================================
@@ -143,18 +149,14 @@ document.getElementById("loginMessage")
 
 function logout(){
 
+// Clear all login data
+localStorage.removeItem("loggedIn");
+localStorage.removeItem("loginVersion");
 
-localStorage.removeItem(
-"loggedIn"
-);
-
-
+// Reload to show login page
 location.reload();
 
-
 }
-
-
 
 
 // =====================================
@@ -163,19 +165,35 @@ location.reload();
 
 function showApp(){
 
-
 document.getElementById("loginPage")
 .style.display="none";
-
 
 document.getElementById("appPage")
 .style.display="block";
 
-
 }
 
 
+// =====================================
+// SHOW LOGIN
+// =====================================
 
+function showLogin(){
+
+document.getElementById("loginPage")
+.style.display="flex";
+
+document.getElementById("appPage")
+.style.display="none";
+
+// Clear any error messages
+document.getElementById("loginMessage").innerHTML = "";
+
+// Clear input fields
+document.getElementById("username").value = "";
+document.getElementById("password").value = "";
+
+}
 
 
 // =====================================
@@ -184,16 +202,12 @@ document.getElementById("appPage")
 
 async function searchVehicle(){
 
-
-
 let input =
 document
 .getElementById("vehicleNumber")
 .value
 .trim()
 .toUpperCase();
-
-
 
 if(input===""){
 
@@ -205,15 +219,10 @@ return;
 
 }
 
-
-
 loading("Searching...");
-
 
 document.getElementById("result")
 .innerHTML="";
-
-
 
 // EXACT SEARCH
 
@@ -228,25 +237,17 @@ let {data,error}=await db
 input
 );
 
-
-
 let vehicles=data || [];
-
-
-
 
 // SEARCH WITHOUT LETTERS / DASH
 
 if(vehicles.length===0){
-
 
 let clean =
 input.replace(
 /[^A-Z0-9]/g,
 ""
 );
-
-
 
 let all =
 await db
@@ -255,12 +256,9 @@ await db
 
 .select("*");
 
-
-
 vehicles =
 (all.data || [])
 .filter(v=>{
-
 
 let dbNumber =
 String(v.vehicle_number)
@@ -270,24 +268,15 @@ String(v.vehicle_number)
 ""
 );
 
-
-
 return dbNumber.includes(clean);
-
 
 });
 
-
 }
-
-
 
 loading("");
 
-
-
 if(vehicles.length===0){
-
 
 document.getElementById("result")
 .innerHTML=
@@ -302,8 +291,6 @@ return;
 
 }
 
-
-
 if(vehicles.length>1){
 
 showVehicleSelector(
@@ -314,26 +301,17 @@ return;
 
 }
 
-
-
 loadVehicleDetails(
 vehicles[0]
 );
 
-
-
 }
-
-
-
-
 
 // =====================================
 // MULTIPLE VEHICLES
 // =====================================
 
 function showVehicleSelector(list){
-
 
 let html=
 
@@ -346,11 +324,8 @@ Select Vehicle
 
 `;
 
-
-
 list.forEach(
 (v,index)=>{
-
 
 html+=`
 
@@ -358,13 +333,11 @@ html+=`
 style="cursor:pointer"
 onclick="loadVehicleDetailsById('${v.id}')">
 
-
 <div class="label">
 
 ${index+1}. ${v.vehicle_number}
 
 </div>
-
 
 <div class="value">
 
@@ -374,31 +347,21 @@ ${v.fuel_type || ""}
 
 </div>
 
-
 </div>
 
 `;
 
-
 });
 
-
 html+=`</div>`;
-
 
 document.getElementById("result")
 .innerHTML=html;
 
-
 }
-
-
 
 window.loadVehicleDetailsById =
 loadVehicleDetailsById;
-
-
-
 
 
 // =====================================
@@ -406,7 +369,6 @@ loadVehicleDetailsById;
 // =====================================
 
 async function loadVehicleDetailsById(id){
-
 
 let {data,error}=await db
 
@@ -421,8 +383,6 @@ id
 
 .single();
 
-
-
 if(error){
 
 console.log(error);
@@ -431,14 +391,9 @@ return;
 
 }
 
-
 loadVehicleDetails(data);
 
-
 }
-
-
-
 
 
 // =====================================
@@ -447,20 +402,15 @@ loadVehicleDetails(data);
 
 async function loadVehicleDetails(data){
 
-
 loading(
 "Loading details..."
 );
-
-
-
 
 // ===============================
 // IMAGES
 // ===============================
 
 let imagesHTML="";
-
 
 let images =
 await db
@@ -481,13 +431,10 @@ ascending:true
 }
 );
 
-
-
 if(
 images.data &&
 images.data.length>0
 ){
-
 
 imagesHTML=
 
@@ -497,9 +444,7 @@ imagesHTML=
 Vehicle Images
 </div>
 
-
 <div class="images">
-
 
 ${
 images.data.map(img=>
@@ -516,12 +461,9 @@ onclick="openImage('${img.image_url}')"
 
 >
 
-
 `
-
 ).join("")
 }
-
 
 </div>
 
@@ -530,14 +472,11 @@ onclick="openImage('${img.image_url}')"
 }
 
 
-
-
 // ===============================
 // OPTIONS
 // ===============================
 
 let optionsHTML="";
-
 
 let optionIDs =
 await db
@@ -551,20 +490,15 @@ await db
 data.id
 );
 
-
-
 if(
 optionIDs.data &&
 optionIDs.data.length
 ){
 
-
 let ids =
 optionIDs.data.map(
 x=>x.option_id
 );
-
-
 
 let options =
 await db
@@ -580,10 +514,7 @@ await db
 ids
 );
 
-
-
 if(options.data){
-
 
 optionsHTML =
 options.data.map(o=>
@@ -597,17 +528,11 @@ options.data.map(o=>
 </div>
 
 `
-
 ).join("");
 
 }
 
-
-
 }
-
-
-
 
 
 // ===============================
@@ -615,7 +540,6 @@ options.data.map(o=>
 // ===============================
 
 let inspectionHTML="";
-
 
 let inspection =
 await db
@@ -631,20 +555,15 @@ await db
 data.id
 );
 
-
-
 if(
 inspection.data &&
 inspection.data.length
 ){
 
-
 let ids =
 inspection.data.map(
 x=>x.inspection_item_id
 );
-
-
 
 let items =
 await db
@@ -658,10 +577,7 @@ await db
 ids
 );
 
-
-
 if(items.data){
-
 
 inspectionHTML =
 items.data.map(i=>
@@ -675,27 +591,18 @@ items.data.map(i=>
 </div>
 
 `
-
 ).join("");
 
 }
 
-
-
 }
-
-
 
 
 loading("");
 
-
-
-
 // ===============================
 // DISPLAY
 // ===============================
-
 
 document.getElementById("result")
 .innerHTML=
@@ -704,24 +611,17 @@ document.getElementById("result")
 
 <div class="vehicle-card">
 
-
 <div class="vehicle-header">
 
 ${data.vehicle_number}
 
 </div>
 
-
-
 ${imagesHTML}
-
-
 
 <div class="section-title">
 Vehicle Details
 </div>
-
-
 
 ${row("Brand ID",data.brand_id)}
 
@@ -750,13 +650,9 @@ Number(data.selling_amount).toLocaleString())}
 
 ${row("Status",data.status)}
 
-
-
-
 <div class="section-title">
 Vehicle Options
 </div>
-
 
 <div class="options">
 
@@ -764,15 +660,9 @@ ${optionsHTML || "No Options"}
 
 </div>
 
-
-
-
-
 <div class="section-title">
 Inspection
 </div>
-
-
 
 ${row("Battery Number",data.battery_number)}
 
@@ -784,15 +674,9 @@ ${row("Ownership",data.ownership)}
 
 ${row("Inspection Note",data.special_inspection_note)}
 
-
-
-
-
-
 <div class="section-title">
 Inspection Items
 </div>
-
 
 <div class="options">
 
@@ -800,29 +684,17 @@ ${inspectionHTML || "No Inspection Items"}
 
 </div>
 
-
-
-
-
 <div class="section-title">
 Notes
 </div>
 
-
-
 ${row("Tag Notes",data.tag_notes)}
-
-
 
 </div>
 
 `;
 
-
-
 }
-
-
 
 
 // =====================================
@@ -831,14 +703,10 @@ ${row("Tag Notes",data.tag_notes)}
 
 function openImage(url){
 
-
 let win =
 window.open("");
 
-
-
 win.document.write(`
-
 
 <html>
 
@@ -848,9 +716,7 @@ win.document.write(`
 Vehicle Image
 </title>
 
-
 <style>
-
 
 body{
 
@@ -868,8 +734,6 @@ height:100vh;
 
 }
 
-
-
 img{
 
 max-width:100%;
@@ -880,31 +744,21 @@ object-fit:contain;
 
 }
 
-
 </style>
-
 
 </head>
 
-
 <body>
-
 
 <img src="${url}">
 
-
 </body>
-
 
 </html>
 
-
 `);
 
-
 }
-
-
 
 
 // =====================================
@@ -913,11 +767,9 @@ object-fit:contain;
 
 function row(title,value){
 
-
 return `
 
 <div class="row">
-
 
 <div class="label">
 
@@ -925,23 +777,17 @@ ${title}
 
 </div>
 
-
-
 <div class="value">
 
 ${value ?? "-"}
 
 </div>
 
-
 </div>
-
 
 `;
 
 }
-
-
 
 
 // =====================================
@@ -950,9 +796,7 @@ ${value ?? "-"}
 
 function loading(text){
 
-
 document.getElementById("loading")
 .innerHTML=text;
-
 
 }
