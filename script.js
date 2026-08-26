@@ -16,14 +16,10 @@ const db = window.supabase.createClient(
 );
 
 // =====================================
-// LOGIN CREDENTIALS (Update these when you change login)
+// USER ID (Update this with actual user ID)
 // =====================================
 
-const VALID_USERNAME = "admin";
-const VALID_PASSWORD = "12345";
-
-// Version number - increment this when you change credentials
-const LOGIN_VERSION = "1.0";
+const CURRENT_USER_ID = "63589afd-c745-4360-b6b9-10d663f9db07";
 
 
 // =====================================
@@ -32,70 +28,56 @@ const LOGIN_VERSION = "1.0";
 
 document.addEventListener(
 "DOMContentLoaded",
-()=>{
+function() {
 
-document
-.getElementById("loginBtn")
-.addEventListener(
-"click",
-login
-);
+    // Login Button
+    document
+    .getElementById("loginBtn")
+    .addEventListener(
+    "click",
+    login
+    );
 
-document
-.getElementById("searchBtn")
-.addEventListener(
-"click",
-searchVehicle
-);
+    // Search Button
+    document
+    .getElementById("searchBtn")
+    .addEventListener(
+    "click",
+    searchVehicle
+    );
 
-document
-.getElementById("logoutBtn")
-.addEventListener(
-"click",
-logout
-);
+    // Logout Button
+    document
+    .getElementById("logoutBtn")
+    .addEventListener(
+    "click",
+    logout
+    );
 
-document
-.getElementById("vehicleNumber")
-.addEventListener(
-"keypress",
-function(e){
+    // Vehicle Number Enter key
+    document
+    .getElementById("vehicleNumber")
+    .addEventListener(
+    "keypress",
+    function(e){
+        if(e.key==="Enter"){
+            searchVehicle();
+        }
+    }
+    );
 
-if(e.key==="Enter"){
+    // Refresh Notifications Button
+    const refreshBtn = document.getElementById("refreshNotificationsBtn");
+    if (refreshBtn) {
+        refreshBtn.addEventListener("click", refreshNotifications);
+    }
 
-searchVehicle();
-
-}
-
-}
-
-);
-
-// Check if user is already logged in
-checkLoginStatus();
+    // Check login status
+    if(localStorage.getItem("loggedIn")==="yes"){
+        showApp();
+    }
 
 });
-
-
-// =====================================
-// CHECK LOGIN STATUS
-// =====================================
-
-function checkLoginStatus() {
-    const loggedIn = localStorage.getItem("loggedIn");
-    const savedVersion = localStorage.getItem("loginVersion");
-    const currentVersion = LOGIN_VERSION;
-
-    // If logged in and version matches, show app directly
-    if (loggedIn === "yes" && savedVersion === currentVersion) {
-        showApp();
-    } else {
-        // Clear any invalid login data
-        localStorage.removeItem("loggedIn");
-        localStorage.removeItem("loginVersion");
-        showLogin();
-    }
-}
 
 
 // =====================================
@@ -104,41 +86,16 @@ function checkLoginStatus() {
 
 function login(){
 
-let user =
-document.getElementById("username")
-.value
-.trim();
+    let user = document.getElementById("username").value.trim();
+    let pass = document.getElementById("password").value.trim();
 
-let pass =
-document.getElementById("password")
-.value
-.trim();
-
-if(
-user === VALID_USERNAME &&
-pass === VALID_PASSWORD
-){
-
-// Save login status with version
-localStorage.setItem(
-"loggedIn",
-"yes"
-);
-localStorage.setItem(
-"loginVersion",
-LOGIN_VERSION
-);
-
-showApp();
-
-}
-else{
-
-document.getElementById("loginMessage")
-.innerHTML =
-"Invalid Username or Password";
-
-}
+    if(user==="admin" && pass==="12345"){
+        localStorage.setItem("loggedIn", "yes");
+        showApp();
+    }
+    else{
+        document.getElementById("loginMessage").innerHTML = "Invalid Username or Password";
+    }
 
 }
 
@@ -148,14 +105,8 @@ document.getElementById("loginMessage")
 // =====================================
 
 function logout(){
-
-// Clear all login data
-localStorage.removeItem("loggedIn");
-localStorage.removeItem("loginVersion");
-
-// Reload to show login page
-location.reload();
-
+    localStorage.removeItem("loggedIn");
+    location.reload();
 }
 
 
@@ -164,35 +115,170 @@ location.reload();
 // =====================================
 
 function showApp(){
-
-document.getElementById("loginPage")
-.style.display="none";
-
-document.getElementById("appPage")
-.style.display="block";
-
+    document.getElementById("loginPage").style.display = "none";
+    document.getElementById("appPage").style.display = "block";
+    // Load notifications when app is shown
+    loadNotifications();
 }
 
 
 // =====================================
-// SHOW LOGIN
+// NOTIFICATIONS
 // =====================================
 
-function showLogin(){
+// Load notifications on page load
+async function loadNotifications() {
+    const container = document.getElementById("notificationsList");
+    if (!container) return;
+    
+    try {
+        const { data, error } = await db
+            .from("notifications")
+            .select("*")
+            .eq("user_id", CURRENT_USER_ID)
+            .order("created_at", { ascending: false })
+            .limit(50);
+        
+        if (error) {
+            container.innerHTML = `
+                <div class="no-notifications">
+                    <div class="icon">❌</div>
+                    <div>Error loading notifications</div>
+                </div>
+            `;
+            return;
+        }
+        
+        if (!data || data.length === 0) {
+            container.innerHTML = `
+                <div class="no-notifications">
+                    <div class="icon">📭</div>
+                    <div>No notifications yet</div>
+                </div>
+            `;
+            return;
+        }
+        
+        renderNotifications(data, container);
+        
+    } catch (error) {
+        container.innerHTML = `
+            <div class="no-notifications">
+                <div class="icon">❌</div>
+                <div>Failed to load notifications</div>
+            </div>
+        `;
+    }
+}
 
-document.getElementById("loginPage")
-.style.display="flex";
+// Render notifications
+function renderNotifications(notifications, container) {
+    let html = "";
+    let unreadCount = 0;
+    
+    notifications.forEach(notification => {
+        const isUnread = !notification.is_read;
+        if (isUnread) unreadCount++;
+        
+        const icon = getNotificationIcon(notification.type);
+        const time = formatTime(notification.created_at);
+        
+        html += `
+            <div class="notification-item ${isUnread ? 'unread' : 'read'} notification-type-${notification.type}" 
+                 data-id="${notification.id}"
+                 onclick="markAsRead('${notification.id}')">
+                <div class="notification-icon">${icon}</div>
+                <div class="notification-content">
+                    <div class="title">${notification.title || 'Notification'}</div>
+                    <div class="message">${notification.message || ''}</div>
+                    <div class="time">${time}</div>
+                    ${isUnread ? '<button class="mark-read-btn" onclick="event.stopPropagation(); markAsRead(\'' + notification.id + '\')">Mark as read</button>' : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    updateNotificationBadge(unreadCount);
+    container.innerHTML = html;
+}
 
-document.getElementById("appPage")
-.style.display="none";
+// Get icon based on notification type
+function getNotificationIcon(type) {
+    const icons = {
+        'added': '➕',
+        'updated': '✏️',
+        'sold': '💰',
+        'moved_to_sales': '📦',
+        'default': '📢'
+    };
+    return icons[type] || icons.default;
+}
 
-// Clear any error messages
-document.getElementById("loginMessage").innerHTML = "";
+// Format time
+function formatTime(timestamp) {
+    if (!timestamp) return '';
+    
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+    
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) {
+        const mins = Math.floor(diff / 60000);
+        return mins + 'm ago';
+    }
+    if (diff < 86400000) {
+        const hours = Math.floor(diff / 3600000);
+        return hours + 'h ago';
+    }
+    if (diff < 604800000) {
+        const days = Math.floor(diff / 86400000);
+        return days + 'd ago';
+    }
+    return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric',
+        year: 'numeric'
+    });
+}
 
-// Clear input fields
-document.getElementById("username").value = "";
-document.getElementById("password").value = "";
+// Mark notification as read
+async function markAsRead(notificationId) {
+    try {
+        const { error } = await db
+            .from("notifications")
+            .update({ is_read: true })
+            .eq("id", notificationId);
+        
+        if (error) {
+            console.error("Error marking as read:", error);
+            return;
+        }
+        loadNotifications();
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
 
+// Update notification badge
+function updateNotificationBadge(count) {
+    const header = document.querySelector('.notifications-title');
+    if (!header) return;
+    
+    if (count > 0) {
+        header.innerHTML = `📢 Notifications <span class="notification-badge">${count}</span>`;
+    } else {
+        header.innerHTML = `📢 Notifications`;
+    }
+}
+
+// Refresh notifications
+function refreshNotifications() {
+    const container = document.getElementById("notificationsList");
+    if (container) {
+        container.innerHTML = `<div class="loading-notifications">Loading notifications...</div>`;
+    }
+    loadNotifications();
 }
 
 
@@ -202,166 +288,78 @@ document.getElementById("password").value = "";
 
 async function searchVehicle(){
 
-let input =
-document
-.getElementById("vehicleNumber")
-.value
-.trim()
-.toUpperCase();
+    let input = document.getElementById("vehicleNumber").value.trim().toUpperCase();
 
-if(input===""){
+    if(input===""){
+        alert("Enter Vehicle Number");
+        return;
+    }
 
-alert(
-"Enter Vehicle Number"
-);
+    loading("Searching...");
+    document.getElementById("result").innerHTML = "";
 
-return;
+    // EXACT SEARCH
+    let {data,error} = await db
+        .from("vehicles")
+        .select("*")
+        .eq("vehicle_number", input);
 
+    let vehicles = data || [];
+
+    // SEARCH WITHOUT LETTERS / DASH
+    if(vehicles.length === 0){
+        let clean = input.replace(/[^A-Z0-9]/g, "");
+        let all = await db.from("vehicles").select("*");
+        vehicles = (all.data || []).filter(v => {
+            let dbNumber = String(v.vehicle_number)
+                .toUpperCase()
+                .replace(/[^A-Z0-9]/g, "");
+            return dbNumber.includes(clean);
+        });
+    }
+
+    loading("");
+
+    if(vehicles.length === 0){
+        document.getElementById("result").innerHTML = `
+            <div class="not-found">Vehicle Not Found</div>
+        `;
+        return;
+    }
+
+    if(vehicles.length > 1){
+        showVehicleSelector(vehicles);
+        return;
+    }
+
+    loadVehicleDetails(vehicles[0]);
 }
 
-loading("Searching...");
-
-document.getElementById("result")
-.innerHTML="";
-
-// EXACT SEARCH
-
-let {data,error}=await db
-
-.from("vehicles")
-
-.select("*")
-
-.eq(
-"vehicle_number",
-input
-);
-
-let vehicles=data || [];
-
-// SEARCH WITHOUT LETTERS / DASH
-
-if(vehicles.length===0){
-
-let clean =
-input.replace(
-/[^A-Z0-9]/g,
-""
-);
-
-let all =
-await db
-
-.from("vehicles")
-
-.select("*");
-
-vehicles =
-(all.data || [])
-.filter(v=>{
-
-let dbNumber =
-String(v.vehicle_number)
-.toUpperCase()
-.replace(
-/[^A-Z0-9]/g,
-""
-);
-
-return dbNumber.includes(clean);
-
-});
-
-}
-
-loading("");
-
-if(vehicles.length===0){
-
-document.getElementById("result")
-.innerHTML=
-
-`
-<div class="not-found">
-Vehicle Not Found
-</div>
-`;
-
-return;
-
-}
-
-if(vehicles.length>1){
-
-showVehicleSelector(
-vehicles
-);
-
-return;
-
-}
-
-loadVehicleDetails(
-vehicles[0]
-);
-
-}
 
 // =====================================
 // MULTIPLE VEHICLES
 // =====================================
 
 function showVehicleSelector(list){
+    let html = `
+        <div class="vehicle-card">
+            <div class="vehicle-header">Select Vehicle</div>
+    `;
 
-let html=
+    list.forEach((v,index) => {
+        html += `
+            <div class="row" style="cursor:pointer" onclick="loadVehicleDetailsById('${v.id}')">
+                <div class="label">${index+1}. ${v.vehicle_number}</div>
+                <div class="value">${v.manufacture_year || ""} ${v.fuel_type || ""}</div>
+            </div>
+        `;
+    });
 
-`
-<div class="vehicle-card">
-
-<div class="vehicle-header">
-Select Vehicle
-</div>
-
-`;
-
-list.forEach(
-(v,index)=>{
-
-html+=`
-
-<div class="row"
-style="cursor:pointer"
-onclick="loadVehicleDetailsById('${v.id}')">
-
-<div class="label">
-
-${index+1}. ${v.vehicle_number}
-
-</div>
-
-<div class="value">
-
-${v.manufacture_year || ""}
-
-${v.fuel_type || ""}
-
-</div>
-
-</div>
-
-`;
-
-});
-
-html+=`</div>`;
-
-document.getElementById("result")
-.innerHTML=html;
-
+    html += `</div>`;
+    document.getElementById("result").innerHTML = html;
 }
 
-window.loadVehicleDetailsById =
-loadVehicleDetailsById;
+window.loadVehicleDetailsById = loadVehicleDetailsById;
 
 
 // =====================================
@@ -369,30 +367,17 @@ loadVehicleDetailsById;
 // =====================================
 
 async function loadVehicleDetailsById(id){
+    let {data,error} = await db
+        .from("vehicles")
+        .select("*")
+        .eq("id", id)
+        .single();
 
-let {data,error}=await db
-
-.from("vehicles")
-
-.select("*")
-
-.eq(
-"id",
-id
-)
-
-.single();
-
-if(error){
-
-console.log(error);
-
-return;
-
-}
-
-loadVehicleDetails(data);
-
+    if(error){
+        console.log(error);
+        return;
+    }
+    loadVehicleDetails(data);
 }
 
 
@@ -402,298 +387,118 @@ loadVehicleDetails(data);
 
 async function loadVehicleDetails(data){
 
-loading(
-"Loading details..."
-);
-
-// ===============================
-// IMAGES
-// ===============================
-
-let imagesHTML="";
-
-let images =
-await db
-
-.from("vehicle_images")
-
-.select("*")
-
-.eq(
-"vehicle_id",
-data.id
-)
-
-.order(
-"display_order",
-{
-ascending:true
-}
-);
-
-if(
-images.data &&
-images.data.length>0
-){
-
-imagesHTML=
-
-`
-
-<div class="section-title">
-Vehicle Images
-</div>
-
-<div class="images">
-
-${
-images.data.map(img=>
-
-`
-
-<img
-
-class="vehicle-thumb"
-
-src="${img.image_url}"
-
-onclick="openImage('${img.image_url}')"
-
->
-
-`
-).join("")
-}
-
-</div>
-
-`;
-
-}
-
-
-// ===============================
-// OPTIONS
-// ===============================
-
-let optionsHTML="";
-
-let optionIDs =
-await db
-
-.from("vehicle_options")
-
-.select("option_id")
-
-.eq(
-"vehicle_id",
-data.id
-);
-
-if(
-optionIDs.data &&
-optionIDs.data.length
-){
-
-let ids =
-optionIDs.data.map(
-x=>x.option_id
-);
-
-let options =
-await db
-
-.from("vehicle_options_master")
-
-.select(
-"option_name,option_type"
-)
-
-.in(
-"id",
-ids
-);
-
-if(options.data){
-
-optionsHTML =
-options.data.map(o=>
-
-`
-
-<div class="option-item">
-
-✔ ${o.option_name}
-
-</div>
-
-`
-).join("");
-
-}
-
-}
-
-
-// ===============================
-// INSPECTION ITEMS
-// ===============================
-
-let inspectionHTML="";
-
-let inspection =
-await db
-
-.from("vehicle_inspection_items")
-
-.select(
-"inspection_item_id"
-)
-
-.eq(
-"vehicle_id",
-data.id
-);
-
-if(
-inspection.data &&
-inspection.data.length
-){
-
-let ids =
-inspection.data.map(
-x=>x.inspection_item_id
-);
-
-let items =
-await db
-
-.from("inspection_items_master")
-
-.select("name")
-
-.in(
-"id",
-ids
-);
-
-if(items.data){
-
-inspectionHTML =
-items.data.map(i=>
-
-`
-
-<div class="option-item">
-
-✔ ${i.name}
-
-</div>
-
-`
-).join("");
-
-}
-
-}
-
-
-loading("");
-
-// ===============================
-// DISPLAY
-// ===============================
-
-document.getElementById("result")
-.innerHTML=
-
-`
-
-<div class="vehicle-card">
-
-<div class="vehicle-header">
-
-${data.vehicle_number}
-
-</div>
-
-${imagesHTML}
-
-<div class="section-title">
-Vehicle Details
-</div>
-
-${row("Brand ID",data.brand_id)}
-
-${row("Model ID",data.model_id)}
-
-${row("Manufacture Year",data.manufacture_year)}
-
-${row("Registered Year",data.registered_year)}
-
-${row("Body Type",data.body_type)}
-
-${row("Fuel",data.fuel_type)}
-
-${row("Transmission",data.transmission)}
-
-${row("Engine",data.engine_capacity+" cc")}
-
-${row("Colour",data.exterior_color)}
-
-${row("Mileage",
-Number(data.mileage).toLocaleString()+" km")}
-
-${row("Selling Price",
-"Rs. "+
-Number(data.selling_amount).toLocaleString())}
-
-${row("Status",data.status)}
-
-<div class="section-title">
-Vehicle Options
-</div>
-
-<div class="options">
-
-${optionsHTML || "No Options"}
-
-</div>
-
-<div class="section-title">
-Inspection
-</div>
-
-${row("Battery Number",data.battery_number)}
-
-${row("Fuel Pass",data.fuel_pass)}
-
-${row("Document",data.document_with)}
-
-${row("Ownership",data.ownership)}
-
-${row("Inspection Note",data.special_inspection_note)}
-
-<div class="section-title">
-Inspection Items
-</div>
-
-<div class="options">
-
-${inspectionHTML || "No Inspection Items"}
-
-</div>
-
-<div class="section-title">
-Notes
-</div>
-
-${row("Tag Notes",data.tag_notes)}
-
-</div>
-
-`;
-
+    loading("Loading details...");
+
+    // ===============================
+    // IMAGES
+    // ===============================
+
+    let imagesHTML = "";
+
+    let images = await db
+        .from("vehicle_images")
+        .select("*")
+        .eq("vehicle_id", data.id)
+        .order("display_order", { ascending: true });
+
+    if(images.data && images.data.length > 0){
+        imagesHTML = `
+            <div class="section-title">Vehicle Images</div>
+            <div class="images">
+                ${images.data.map(img => `
+                    <img class="vehicle-thumb" src="${img.image_url}" onclick="openImage('${img.image_url}')">
+                `).join("")}
+            </div>
+        `;
+    }
+
+    // ===============================
+    // OPTIONS
+    // ===============================
+
+    let optionsHTML = "";
+
+    let optionIDs = await db
+        .from("vehicle_options")
+        .select("option_id")
+        .eq("vehicle_id", data.id);
+
+    if(optionIDs.data && optionIDs.data.length){
+        let ids = optionIDs.data.map(x => x.option_id);
+        let options = await db
+            .from("vehicle_options_master")
+            .select("option_name,option_type")
+            .in("id", ids);
+
+        if(options.data){
+            optionsHTML = options.data.map(o => `
+                <div class="option-item">✔ ${o.option_name}</div>
+            `).join("");
+        }
+    }
+
+    // ===============================
+    // INSPECTION ITEMS
+    // ===============================
+
+    let inspectionHTML = "";
+
+    let inspection = await db
+        .from("vehicle_inspection_items")
+        .select("inspection_item_id")
+        .eq("vehicle_id", data.id);
+
+    if(inspection.data && inspection.data.length){
+        let ids = inspection.data.map(x => x.inspection_item_id);
+        let items = await db
+            .from("inspection_items_master")
+            .select("name")
+            .in("id", ids);
+
+        if(items.data){
+            inspectionHTML = items.data.map(i => `
+                <div class="option-item">✔ ${i.name}</div>
+            `).join("");
+        }
+    }
+
+    loading("");
+
+    // ===============================
+    // DISPLAY
+    // ===============================
+
+    document.getElementById("result").innerHTML = `
+        <div class="vehicle-card">
+            <div class="vehicle-header">${data.vehicle_number}</div>
+            ${imagesHTML}
+            <div class="section-title">Vehicle Details</div>
+            ${row("Brand ID",data.brand_id)}
+            ${row("Model ID",data.model_id)}
+            ${row("Manufacture Year",data.manufacture_year)}
+            ${row("Registered Year",data.registered_year)}
+            ${row("Body Type",data.body_type)}
+            ${row("Fuel",data.fuel_type)}
+            ${row("Transmission",data.transmission)}
+            ${row("Engine",data.engine_capacity+" cc")}
+            ${row("Colour",data.exterior_color)}
+            ${row("Mileage",Number(data.mileage).toLocaleString()+" km")}
+            ${row("Selling Price","Rs. "+Number(data.selling_amount).toLocaleString())}
+            ${row("Status",data.status)}
+            <div class="section-title">Vehicle Options</div>
+            <div class="options">${optionsHTML || "No Options"}</div>
+            <div class="section-title">Inspection</div>
+            ${row("Battery Number",data.battery_number)}
+            ${row("Fuel Pass",data.fuel_pass)}
+            ${row("Document",data.document_with)}
+            ${row("Ownership",data.ownership)}
+            ${row("Inspection Note",data.special_inspection_note)}
+            <div class="section-title">Inspection Items</div>
+            <div class="options">${inspectionHTML || "No Inspection Items"}</div>
+            <div class="section-title">Notes</div>
+            ${row("Tag Notes",data.tag_notes)}
+        </div>
+    `;
 }
 
 
@@ -702,62 +507,32 @@ ${row("Tag Notes",data.tag_notes)}
 // =====================================
 
 function openImage(url){
-
-let win =
-window.open("");
-
-win.document.write(`
-
-<html>
-
-<head>
-
-<title>
-Vehicle Image
-</title>
-
-<style>
-
-body{
-
-margin:0;
-
-background:black;
-
-display:flex;
-
-justify-content:center;
-
-align-items:center;
-
-height:100vh;
-
-}
-
-img{
-
-max-width:100%;
-
-max-height:100vh;
-
-object-fit:contain;
-
-}
-
-</style>
-
-</head>
-
-<body>
-
-<img src="${url}">
-
-</body>
-
-</html>
-
-`);
-
+    let win = window.open("");
+    win.document.write(`
+        <html>
+            <head>
+                <title>Vehicle Image</title>
+                <style>
+                    body{
+                        margin:0;
+                        background:black;
+                        display:flex;
+                        justify-content:center;
+                        align-items:center;
+                        height:100vh;
+                    }
+                    img{
+                        max-width:100%;
+                        max-height:100vh;
+                        object-fit:contain;
+                    }
+                </style>
+            </head>
+            <body>
+                <img src="${url}">
+            </body>
+        </html>
+    `);
 }
 
 
@@ -766,27 +541,12 @@ object-fit:contain;
 // =====================================
 
 function row(title,value){
-
-return `
-
-<div class="row">
-
-<div class="label">
-
-${title}
-
-</div>
-
-<div class="value">
-
-${value ?? "-"}
-
-</div>
-
-</div>
-
-`;
-
+    return `
+        <div class="row">
+            <div class="label">${title}</div>
+            <div class="value">${value ?? "-"}</div>
+        </div>
+    `;
 }
 
 
@@ -795,8 +555,5 @@ ${value ?? "-"}
 // =====================================
 
 function loading(text){
-
-document.getElementById("loading")
-.innerHTML=text;
-
+    document.getElementById("loading").innerHTML = text;
 }
