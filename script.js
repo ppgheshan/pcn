@@ -286,12 +286,20 @@ function refreshNotifications() {
 // SEARCH VEHICLE
 // =====================================
 
+
+// =====================================
+// SEARCH VEHICLE (UPDATED - Shows error under textbox)
+// =====================================
+
 async function searchVehicle(){
 
     let input = document.getElementById("vehicleNumber").value.trim().toUpperCase();
+    
+    // Clear previous error message
+    clearErrorMessage();
 
     if(input===""){
-        alert("Enter Vehicle Number");
+        showErrorMessage("Please enter a vehicle number");
         return;
     }
 
@@ -333,6 +341,41 @@ async function searchVehicle(){
     }
 
     loadVehicleDetails(vehicles[0]);
+}
+
+// =====================================
+// SHOW ERROR MESSAGE UNDER TEXTBOX
+// =====================================
+
+function showErrorMessage(message) {
+    // Remove existing error message if any
+    clearErrorMessage();
+    
+    // Create error message element
+    const errorDiv = document.createElement("div");
+    errorDiv.id = "vehicleNumberError";
+    errorDiv.className = "error-message";
+    errorDiv.textContent = message;
+    
+    // Insert after the vehicle number input
+    const vehicleInput = document.getElementById("vehicleNumber");
+    vehicleInput.parentNode.insertBefore(errorDiv, vehicleInput.nextSibling);
+    
+    // Add red border to input
+    vehicleInput.classList.add("input-error");
+}
+
+// =====================================
+// CLEAR ERROR MESSAGE
+// =====================================
+
+function clearErrorMessage() {
+    const errorElement = document.getElementById("vehicleNumberError");
+    if (errorElement) {
+        errorElement.remove();
+    }
+    const vehicleInput = document.getElementById("vehicleNumber");
+    vehicleInput.classList.remove("input-error");
 }
 
 
