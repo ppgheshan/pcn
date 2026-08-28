@@ -836,3 +836,39 @@ body{
         font-size: 13px;
     }
 }
+/* =====================================
+   ERROR MESSAGE UNDER TEXTBOX
+===================================== */
+
+.error-message {
+    color: #e74c3c;
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    animation: fadeIn 0.3s ease;
+}
+
+.input-error {
+    border: 2px solid #e74c3c !important;
+    background-color: #fff5f5;
+    animation: shake 0.3s ease;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
