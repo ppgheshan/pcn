@@ -781,3 +781,58 @@ body{
     color: #1976d2;
     transition: color 0.3s ease;
 }
+/* =====================================
+   INSPECTION ITEMS (New styling)
+===================================== */
+
+.inspection-container {
+    padding: 10px 0;
+}
+
+.inspection-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+    padding: 10px 15px;
+}
+
+.inspection-item {
+    background: #f0f8f0;
+    padding: 8px 12px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-left: 3px solid #27ae60;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.inspection-item:hover {
+    background: #e8f5e8;
+    transform: translateX(3px);
+}
+
+.inspection-check {
+    font-size: 16px;
+    color: #27ae60;
+}
+
+.inspection-name {
+    color: #333;
+    font-weight: 500;
+}
+
+/* Responsive for inspection items */
+@media(max-width: 768px) {
+    .inspection-items-grid {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        padding: 8px 12px;
+    }
+    
+    .inspection-item {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+}
