@@ -557,3 +557,25 @@ function row(title,value){
 function loading(text){
     document.getElementById("loading").innerHTML = text;
 }
+/* =====================================
+   FOOTER
+===================================== */
+
+.footer {
+    margin-top: 30px;
+    padding: 15px 0 5px 0;
+    text-align: center;
+    border-top: 1px solid #e0e0e0;
+}
+
+.footer p {
+    color: #999;
+    font-size: 13px;
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+.footer p:hover {
+    color: #1976d2;
+    transition: color 0.3s ease;
+}
