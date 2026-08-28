@@ -382,7 +382,7 @@ async function loadVehicleDetailsById(id){
 
 
 // =====================================
-// LOAD DETAILS
+// LOAD DETAILS (UPDATED - Fixed inspection items table name)
 // =====================================
 
 async function loadVehicleDetails(data){
@@ -438,28 +438,68 @@ async function loadVehicleDetails(data){
     }
 
     // ===============================
-    // INSPECTION ITEMS
+    // INSPECTION ITEMS (FIXED - Using correct table name)
     // ===============================
 
     let inspectionHTML = "";
 
-    let inspection = await db
-        .from("vehicle_inspection_items")
-        .select("inspection_item_id")
-        .eq("vehicle_id", data.id);
+    try {
+        // First, get the inspection items for this vehicle
+        let inspection = await db
+            .from("vehicle_inspection_items")
+            .select("inspection_item_id")
+            .eq("vehicle_id", data.id);
 
-    if(inspection.data && inspection.data.length){
-        let ids = inspection.data.map(x => x.inspection_item_id);
-        let items = await db
-            .from("inspection_items_master")
-            .select("name")
-            .in("id", ids);
+        console.log("Inspection data for vehicle:", data.id, inspection);
 
-        if(items.data){
-            inspectionHTML = items.data.map(i => `
-                <div class="option-item">✔ ${i.name}</div>
-            `).join("");
+        if(inspection.data && inspection.data.length > 0){
+            let ids = inspection.data.map(x => x.inspection_item_id);
+            console.log("Inspection item IDs:", ids);
+            
+            // FIXED: Using "inspection_items" instead of "inspection_items_master"
+            let items = await db
+                .from("inspection_items")
+                .select("id, name")
+                .in("id", ids);
+
+            console.log("Inspection items details:", items);
+
+            if(items.data && items.data.length > 0){
+                // Display inspection items with better styling
+                inspectionHTML = `
+                    <div class="inspection-items-grid">
+                        ${items.data.map(i => `
+                            <div class="inspection-item">
+                                <span class="inspection-check">✅</span>
+                                <span class="inspection-name">${i.name}</span>
+                            </div>
+                        `).join("")}
+                    </div>
+                    <div style="padding: 0 15px 15px 15px; font-size: 13px; color: #666;">
+                        Total: ${items.data.length} inspection items
+                    </div>
+                `;
+            } else {
+                inspectionHTML = `
+                    <div style="padding: 15px; color: #999;">
+                        ⚠️ No inspection items found in the master table
+                    </div>
+                `;
+            }
+        } else {
+            inspectionHTML = `
+                <div style="padding: 15px; color: #999;">
+                    📋 No inspection items assigned to this vehicle
+                </div>
+            `;
         }
+    } catch (error) {
+        console.error("Error fetching inspection items:", error);
+        inspectionHTML = `
+            <div style="padding: 15px; color: #e74c3c;">
+                ❌ Error loading inspection items: ${error.message}
+            </div>
+        `;
     }
 
     loading("");
@@ -475,6 +515,7 @@ async function loadVehicleDetails(data){
             <div class="section-title">Vehicle Details</div>
             ${row("Brand ID",data.brand_id)}
             ${row("Model ID",data.model_id)}
+            ${row("Vehicle Grade",data.vehicle_grade)}
             ${row("Manufacture Year",data.manufacture_year)}
             ${row("Registered Year",data.registered_year)}
             ${row("Body Type",data.body_type)}
@@ -494,7 +535,7 @@ async function loadVehicleDetails(data){
             ${row("Ownership",data.ownership)}
             ${row("Inspection Note",data.special_inspection_note)}
             <div class="section-title">Inspection Items</div>
-            <div class="options">${inspectionHTML || "No Inspection Items"}</div>
+            <div class="inspection-container">${inspectionHTML}</div>
             <div class="section-title">Notes</div>
             ${row("Tag Notes",data.tag_notes)}
         </div>
